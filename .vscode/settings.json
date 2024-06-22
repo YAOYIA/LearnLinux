@@ -1,0 +1,10 @@
+{
+    "files.associations": {
+        "typeinfo": "c",
+        "unistd.h": "c",
+        "algorithm": "c",
+        "functional": "c",
+        "fcntl.h": "c",
+        "inet.h": "c"
+    }
+}
