@@ -1,4 +1,11 @@
 CC:=gcc
+CFLAGS:=-g -O0
+BUILD_DIR:=build
+TARGET := $(BUILD_DIR)/single_conn_server
+
+# 默认目标
+all: $(TARGET)
+
 # num_endianess_convert:num_endianess_convert.c
 # 	${CC} -o $@ $^
 # 	./$@
@@ -9,17 +16,18 @@ CC:=gcc
 # 	./$@
 # 	rm ./$@
 
-# single_conn_client:single_conn_client.c
-# 	${CC} -o $@ $^
+# ${TARGET}:single_conn_client.c
+# 	@mkdir -p $(BUILD_DIR)   
+# 	${CC} $(CFLAGS) -o $@ $^
 # 	# ./$@
 # 	# rm ./$@
 
-# single_conn_server:single_conn_server.c
-# 	${CC} -o $@ $^
-# 	# ./$@
-# 	# rm ./$@
-
-without_buf_test:without_buf_test.c
+${TARGET}:single_conn_server.c
 	${CC} -o $@ $^
-	./$@
-	rm ./$@
+	# ./$@
+	# rm ./$@
+
+# without_buf_test:without_buf_test.c
+# 	${CC} -o $@ $^
+# 	./$@
+# 	rm ./$@
