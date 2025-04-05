@@ -145,7 +145,7 @@ int main() {
 但是，需要一些额外的设置
 
 
-# 调试多进程服务程序
+# 六、调试多进程服务程序
 调试父进程
 ```
 set follow-fork-mode parent (缺省)
@@ -167,3 +167,129 @@ info inferiors
 ```
 inferior 进程id
 ```
+
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+int main() {
+    printf("begin\n");
+    if (fork() != 0) {
+        printf("parent:pid=%d,ppid=%d\n",getpid(),getppid());
+        // sleep(2);
+        for (size_t i = 0; i < 10; i++)
+        {
+            printf("i=%d\n",i);
+            sleep(1);
+        }
+        printf("parent exit\n");
+        exit(0);
+       
+    } else {
+        printf("child:pid=%d,ppid=%d\n",getpid(),getppid());
+        // sleep(1);
+        for (size_t j = 0; j < 10; j++)
+        {
+            printf("j=%d\n",j);
+            sleep(1);
+        }
+        printf("child exit\n");
+        exit(0);
+        
+    }
+}
+```
+
+
+# 七、调试多线程程序
+```
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <pthread.h>
+
+
+int x=0,y=0;
+
+pthread_t pthid1,pyhid2;
+
+void *thread1(void *arg) ;
+void *thread2(void *arg) ;
+
+
+int main() {
+    if (pthread_create(&pthid1,NULL,thread1,(void*)0)!=0)
+    {
+        printf("create thread error\n");
+        return -1;
+    }
+
+    if (pthread_create(&pyhid2,NULL,thread2,(void*)0)!=0)
+    {
+        printf("create thread error\n");
+        return -1;
+    }
+    
+    printf("main thread exit\n");
+    pthread_join(pthid1,NULL);
+    printf("222 \n");
+    pthread_join(pyhid2,NULL);
+    printf("333\n");
+    return 0;
+    
+    
+}
+
+void *thread1(void *arg) {
+    for (x = 0; x < 100; x++)
+    {
+        printf("x = %d\n",x);
+        sleep(1);
+    }
+    pthread_exit(NULL);
+    
+}
+
+
+void *thread2(void *arg) {
+    for (y = 0; y < 100; y++)
+    {
+        printf("y = %d\n",y);
+        sleep(1);
+    }
+    pthread_exit(NULL);
+    
+}
+```
+```
+gcc -o -g test test.cc -lpthread
+```
+在shell中执行
+```
+查看当前运行的进程 ps aux | grep test
+查看当前运行的轻量级进程 ps -aL | grep test
+查看主线程和子线程的关系 pstree -p 主线程id
+```
+
+```
+在gdb中执行
+查看有多少线程：info threads
+返回的信息中有一个Id的前面有*，表示当前线程
+切换线程：thread 线程id
+只运行当前线程：set scheduler-locking on
+运行全部的线程：set scheduler-locking off
+指定某线程执行某gdb命令：thread apply 线程id cmd
+全部的线程执行某gdb命令：thread apply all cmd
+```
+
+# 八、输出日志
+设置断点或者单步跟踪可能会严重干扰多进（线）程之间的竞争状态。导致我们看到一个假象。
+一旦我们在某一个线程设置了断点，该线程在断点处挺住了，只剩下另一个线程在跑。这个时候，并发成精已经完全被破坏了，通过调试器看到的只是一个和谐的场景（理想状态）。
+调试者的调试行为干扰了程序的运行，导致看到的是一个干扰后的现象。既然断点和单步执行不好用，怎么办呢？
+输出log日志，可以避免断点和单步所导致的副作用。
+
+
+
+https://www.bilibili.com/video/BV1ei4y1V758?spm_id_from=333.788.player.switch&vd_source=0ca3f400b830cbbd62a5c41090e1d87b&p=6
